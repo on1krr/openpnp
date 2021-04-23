@@ -6,7 +6,7 @@ include <fillet.scad>;
 extrusion = "motor";
 bearing = "mgn12h";
 stepper = "nema17";
-teeth = 50;
+teeth = 50; //requires gt2 belt profile
 
 motor_x = 75;
 motor_y = 42;
@@ -21,9 +21,8 @@ bearing_id = 10;
 bearing_od = 20;
 bearing_t = 5;
 
-make_motor = 0;
-make_idler = 1;
-make = "idler";  //"motor", "motor2", "idler", "passive", "passive2"
+make = "motor2";  //"motor", "motor2", "passive", "passive2", "idler", "idler2"
+show_pulleys = 0;
 
 function mount_table(idx) =
              //[ hat_w, hat_t, base_t, base_w1, base_l1, base_w2, base_l2,     base_r] 
@@ -56,6 +55,8 @@ stepper_mount_hole_d   = stepper_dimensions[3];
 
 extrude_step = 10;
 extrude_base = 20;
+
+bearing_offset = (make=="passive2") ? (hat_t+base_t) : -1*(bearing_t);
 
 slot_w = hat_w;
 slot_offset = (extrude_base - slot_w)/2;
@@ -109,7 +110,7 @@ difference(){
 */
 
 difference(){
-    if (make == "idler") {
+    if (make == "passive" || make == "passive2") {
         fillet(r=4,steps=5) {
             // round all vertices and preserve polygon dimensions
             linear_extrude(height=base_t+hat_t) {
@@ -117,10 +118,11 @@ difference(){
                 offset(base_r,$fn=24) offset(-base_r,$fn=24) polygon(base_points);
             }
             //add mounting features for bearing
-            translate([motor_x,motor_y,base_t+hat_t])cylinder(d=bearing_od, h=bearing_t);
+//            translate([motor_x,motor_y,base_t+hat_t])cylinder(d=bearing_od, h=bearing_t);
+            translate([motor_x,motor_y,bearing_offset])cylinder(d=bearing_od, h=bearing_t);
         }
     }
-    if (make == "motor" || make == "motor2" || make == "passive" || make == "passive2") {
+    if (make == "motor" || make == "motor2" || make == "idler" || make == "idler2") {
         union() {
             // round all vertices and preserve polygon dimensions
             linear_extrude(height=base_t+hat_t) {
@@ -131,12 +133,12 @@ difference(){
     }
     
     //extrusion clear out
-    if (make == "motor" || make == "passive2") {
+    if (make == "motor" || make == "idler" || make == "passive") {
         rounded_box(remove_center,0.01,hat_t+0.01);
         rounded_box(remove_lower ,0.01,hat_t+0.01);
         rounded_box(remove_upper ,0.01,hat_t+0.01);
     }
-    if (make == "idler" || make == "passive" || make == "motor2") {
+    if (make == "passive2" || make == "idler2" || make == "motor2") {
         translate([0,0,-base_t-0.01]) {
             rounded_box(remove_center,0.01,hat_t+0.01);
             rounded_box(remove_lower ,0.01,hat_t+0.01);
@@ -150,31 +152,35 @@ difference(){
         nema_mount(motor_x,motor_y,0);
     }
 
-    if (make == "idler") {
+    if (make == "passive" || make == "passive2") {
         //remove bearing id
-        translate([motor_x,motor_y,base_t+hat_t])cylinder(d=bearing_id, h=bearing_t+0.1);
+//        translate([motor_x,motor_y,base_t+hat_t])cylinder(d=bearing_id, h=bearing_t+0.1);
+        translate([motor_x,motor_y,bearing_offset-.01])cylinder(d=bearing_id, h=bearing_t+0.1);
 
         //remove cross shaft od
         translate([motor_x,motor_y,0-0.1])cylinder(d=cross_shaft_d, h=base_t+hat_t+bearing_t+0.2);
     }
         
 
-    if (make == "passive" || make == "passive2") {
-        //add mounting hole for idler
+    if (make == "idler" || make == "idler2") {
+        //add mounting hole for passive
         translate([motor_x,motor_y,0-0.1]) cylinder(d=idle_mount_d+0.2, h=base_t+hat_t+0.2);
     }
     
-    //add mounting hole for idler
-    translate([idle_x,idle_y,0]) cylinder(d=idle_mount_d+0.2, h=base_t+hat_t+0.1, center = true);
+    //add mounting hole for passive
+    translate([idle_x,idle_y,0]) cylinder(d=idle_mount_d+0.2, h=2*(base_t+hat_t+0.1), center = true);
 
 }
 
 
     echo("Belt Pitch Diameter", teeth*2/3.1415);
     echo("Belt Centerline above top of extrusion",teeth*2/3.1415/2+motor_y-40); 
-    //Motor Pulley
-    //color([0,1,0]) translate([motor_x,motor_y,10]) cylinder(d=teeth*2/3.1415, h=5, center=true);
-    //echo("Idler Bottom", idle_y-idle_d/2);
-    //Idler Pulley
-    //color([1,0,0]) translate([idle_x,idle_y,10]) cylinder(d=idle_d, h=5, center=true);
+    echo("passive Bottom", idle_y-idle_d/2);
+
+    if (show_pulleys == 1) {
+        //Motor Pulley
+        color([0,1,0]) translate([motor_x,motor_y,10]) cylinder(d=teeth*2/3.1415, h=5, center=true);
+        //passive Pulley
+        color([1,0,0]) translate([idle_x,idle_y,10]) cylinder(d=idle_d, h=5, center=true);
+    }
 
