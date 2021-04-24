@@ -12,9 +12,10 @@ motor_x = 75;
 motor_y = 42;
 
 idle_x = 50;
-idle_y = 27.5;
-idle_d = 15;
-idle_mount_d = 3;
+idle_y = 26.1;
+idle_d = 12.2;
+idle_mount_d = 5;
+idle_nut_d = idle_mount_d * 1.8; 
 
 cross_shaft_d = 5;
 bearing_id = 10;
@@ -163,12 +164,29 @@ difference(){
         
 
     if (make == "idler" || make == "idler2") {
-        //add mounting hole for passive
-        translate([motor_x,motor_y,0-0.1]) cylinder(d=idle_mount_d+0.2, h=base_t+hat_t+0.2);
+        //add mounting hole 
+        translate([motor_x,motor_y,0-0.1]) {
+            cylinder(d=idle_mount_d+0.2, h=base_t+hat_t+0.2);
+            if (make == "motor" || make == "idler" || make == "passive") {
+                cylinder(d=idle_nut_d+0.2, h=2*(base_t+0.1), center = true, $fn=6);
+            }
+            if (make == "motor2" || make == "idler2" || make == "passive2") {
+                translate([0,0,hat_t*2])cylinder(d=idle_nut_d+0.2, h=2*(base_t+0.1), center = true, $fn=6);
+            }
+        }
     }
     
-    //add mounting hole for passive
-    translate([idle_x,idle_y,0]) cylinder(d=idle_mount_d+0.2, h=2*(base_t+hat_t+0.1), center = true);
+    //add mounting hole for idler pulley
+    translate([idle_x,idle_y,0]) {
+        cylinder(d=idle_mount_d+0.2, h=2*(base_t+hat_t+0.1), center = true);
+        if (make == "motor" || make == "idler" || make == "passive") {
+            cylinder(d=idle_nut_d+0.2, h=2*(base_t+0.1), center = true, $fn=6);
+        }
+        if (make == "motor2" || make == "idler2" || make == "passive2") {
+            translate([0,0,hat_t*2])cylinder(d=idle_nut_d+0.2, h=2*(base_t+0.1), center = true, $fn=6);
+        }
+    }
+    
 
 }
 
