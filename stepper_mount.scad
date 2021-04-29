@@ -11,9 +11,10 @@ teeth = 50; //requires gt2 belt profile
 motor_x = 75;
 motor_y = 42;
 
-idle_x = 50;
-idle_y = 26.1;
-idle_d = 12.2;
+idle_x = 51;
+idle_y = 26;
+idle_d1 = 12.0;
+idle_d2 = 18.0;
 idle_mount_d = 5;
 idle_nut_d = idle_mount_d * 1.8; 
 
@@ -22,8 +23,8 @@ bearing_id = 10;
 bearing_od = 20;
 bearing_t = 5;
 
-make = "motor2";  //"motor", "motor2", "passive", "passive2", "idler", "idler2"
-show_pulleys = 0;
+make = "motor";  //"motor", "motor2", "passive", "passive2", "idler", "idler2"
+show_pulleys = 1;
 
 function mount_table(idx) =
              //[ hat_w, hat_t, base_t, base_w1, base_l1, base_w2, base_l2,     base_r] 
@@ -193,12 +194,14 @@ difference(){
 
     echo("Belt Pitch Diameter", teeth*2/3.1415);
     echo("Belt Centerline above top of extrusion",teeth*2/3.1415/2+motor_y-40); 
-    echo("passive Bottom", idle_y-idle_d/2);
+    echo("passive Bottom", idle_y-idle_d1/2);
 
     if (show_pulleys == 1) {
         //Motor Pulley
         color([0,1,0]) translate([motor_x,motor_y,10]) cylinder(d=teeth*2/3.1415, h=5, center=true);
         //passive Pulley
-        color([1,0,0]) translate([idle_x,idle_y,10]) cylinder(d=idle_d, h=5, center=true);
+        color([1,0,0]) translate([idle_x,idle_y,10]) cylinder(d=idle_d1, h=5, center=true);
+        //passive Pulley keeper
+        color([0,0,1]) translate([idle_x,idle_y,10]) cylinder(d1=idle_d1,d2=idle_d2, h=5-0.1, center=true);
     }
 
